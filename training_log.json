@@ -1,30 +1,158 @@
 [
   {
     "params": {
+      "bootstrap": true,
+      "ccp_alpha": 0.0,
+      "criterion": "squared_error",
+      "max_depth": null,
+      "max_features": 1.0,
+      "max_leaf_nodes": null,
+      "max_samples": null,
+      "min_impurity_decrease": 0.0,
+      "min_samples_leaf": 1,
+      "min_samples_split": 2,
+      "min_weight_fraction_leaf": 0.0,
+      "monotonic_cst": null,
       "n_estimators": 100,
-      "max_depth": null
+      "n_jobs": null,
+      "oob_score": false,
+      "random_state": 42,
+      "verbose": 0,
+      "warm_start": false
     },
-    "metrics": "mae 0.3278624704699614 r2 0.8046221033671924"
+    "metrics": "train_mae 0.12222281103439962 train_r2 0.9735281004123543 test_mae 0.3278624704699614 test_r2 0.8046221033671924",
+    "reason": "Initial model"
   },
   {
     "params": {
-      "n_estimators": 100,
-      "max_depth": 15
+      "max_depth": 10,
+      "min_samples_leaf": 2,
+      "n_estimators": 200
     },
-    "metrics": "mae 0.3329667897215407 r2 0.8006061063918262"
+    "metrics": "train_mae 0.2915323234384002 train_r2 0.8690833486463081 test_mae 0.36417225106320494 test_r2 0.7757732914935302",
+    "reason": "given the potential to improve model performance and reduce overfitting, parameters such as 'max_depth', 'min_samples_leaf', and 'n_estimators' adjustments are suggested. 'max_depth = 10' could control tree growth, 'min_samples_leaf = 2' prevents overly specific branches, and increasing 'n_estimators = 200' strengthens averaging.",
+    "error": ""
   },
   {
     "params": {
-      "n_estimators": 100,
-      "max_depth": 20
+      "min_samples_split": 5,
+      "max_features": 0.8
     },
-    "metrics": "mae 0.3279677607860902 r2 0.8044929686333796"
+    "metrics": "train_mae 0.1420771590039851 train_r2 0.9627920399437224 test_mae 0.32616868460393794 test_r2 0.8065566418234745",
+    "reason": "to improve model performance and address overfitting issues, consider adjusting 'min_samples_split' to 5 to further control splitting, and set 'max_features' to 0.8 to reduce feature randomness during training. these hyperparameters have not been tested yet.",
+    "error": ""
+  },
+  {
+    "params": {
+      "min_impurity_decrease": 0.01,
+      "max_leaf_nodes": 50
+    },
+    "metrics": "train_mae 0.531850079521672 train_r2 0.620912772398508 test_mae 0.537768924222506 test_r2 0.5964630991353906",
+    "reason": "based on the training log, introducing parameters like 'min_impurity_decrease' at 0.01 to enforce a minimal information gain at splits and 'max_leaf_nodes' at 50 to cap tree size can potentially help improve performance and generalization. these parameters have not yet been tested and align with the optimization goals.",
+    "error": ""
+  },
+  {
+    "params": {
+      "max_samples": 0.7,
+      "min_weight_fraction_leaf": 0.02
+    },
+    "metrics": "train_mae 0.45825873119408356 train_r2 0.6915162868099596 test_mae 0.46971965355645484 test_r2 0.6631339211386986",
+    "reason": "introducing the 'max_samples' parameter set to 0.7 allows usage of a portion of samples to train each tree, which can increase generalization. altering 'min_weight_fraction_leaf' to 0.02 ensures minimum weighted fraction of sum of weights in a leaf node, reducing chances of overfitting. they are new suggestions.",
+    "error": ""
+  },
+  {
+    "params": {
+      "min_samples_split": 3,
+      "max_features": 0.5
+    },
+    "metrics": "train_mae 0.12628581662653376 train_r2 0.9711298511411897 test_mae 0.3237281604021022 test_r2 0.8108737335783383",
+    "reason": "the previously tested parameter combinations yielded insights on handling overfitting and enhancing model performance. testing 'min_samples_split' at 3 and 'max_features' at 0.5 may explore further improvements since standard values haven't been achieved and these specific values are untested.",
+    "error": ""
   },
   {
     "params": {
       "n_estimators": 150,
+      "max_depth": 15
+    },
+    "metrics": "train_mae 0.16808091748585025 train_r2 0.9573475642325325 test_mae 0.3324894954137037 test_r2 0.801537051262099",
+    "reason": "adjusting 'n_estimators' to 150 enhances model ensemble strength while remaining computationally efficient. testing 'max_depth' at 15 allows further control over tree complexity and overfitting, bridging current results.",
+    "error": ""
+  },
+  {
+    "params": {
+      "ccp_alpha": 0.01,
+      "bootstrap": 0
+    },
+    "metrics": "train_mae 0.16808091748585025 train_r2 0.9573475642325325 test_mae 0.3324894954137037 test_r2 0.801537051262099",
+    "reason": "introducing a positive value for 'ccp_alpha' such as 0.01 could help optimize the cost-complexity pruning mechanism, potentially addressing overfitting issues. experimenting with 'bootstrap = false' can test if disabling random sampling with replacement offers performance improvements\u2014these values have not been tested so far.",
+    "error": "The 'bootstrap' parameter of RandomForestRegressor must be an instance of 'bool' or an instance of 'numpy.bool_'. Got 0 instead."
+  },
+  {
+    "params": {
+      "bootstrap": 1,
+      "n_jobs": -1
+    },
+    "metrics": "train_mae 0.16808091748585025 train_r2 0.9573475642325325 test_mae 0.3324894954137037 test_r2 0.801537051262099",
+    "reason": "testing new parameter values that have not been attempted yet and addressing previously observed error with bootstrap.",
+    "error": "The 'bootstrap' parameter of RandomForestRegressor must be an instance of 'bool' or an instance of 'numpy.bool_'. Got 1 instead."
+  },
+  {
+    "params": {
+      "max_depth": 20,
+      "min_samples_split": 8
+    },
+    "metrics": "train_mae 0.16883272901218824 train_r2 0.9494122158138913 test_mae 0.3295076268121491 test_r2 0.8032960120508598",
+    "reason": "enforcing additional controls over tree depth and split conditions could offer further benefits while addressing the need to explore untested possibilities.",
+    "error": ""
+  },
+  {
+    "params": {
+      "min_samples_leaf": 5,
       "max_depth": 25
     },
-    "metrics": "mae 0.32764939246127595 r2 0.8052474022695463"
+    "metrics": "train_mae 0.21596234378972765 train_r2 0.9119277374309303 test_mae 0.33225226097645205 test_r2 0.7990046475243894",
+    "reason": "based on the training log, the provided parameters have not been explored yet. 'min_samples_leaf' set to 5 and 'max_depth' set to 25 could provide a new combination that regulates tree growth and overfitting more effectively.",
+    "error": ""
+  },
+  {
+    "params": {
+      "n_estimators": 250,
+      "min_impurity_decrease": 0.005
+    },
+    "metrics": "train_mae 0.4799998761289291 train_r2 0.6798665022639714 test_mae 0.49008403782145654 test_r2 0.6507601529968707",
+    "reason": "after reviewing the training logs, these parameters, 'n_estimators=250' may potentially improve model performance as it increases the number of trees beyond the tested values. 'min_impurity_decrease=0.005' serves as an additional control for growth criteria and has not been explored yet.",
+    "error": ""
+  },
+  {
+    "params": {
+      "min_samples_leaf": 3,
+      "n_estimators": 300
+    },
+    "metrics": "train_mae 0.17170380133778682 train_r2 0.9416825125500513 test_mae 0.3277889845352671 test_r2 0.8042531118401881",
+    "reason": "based on the given training log, suggestions to adjust the parameter 'min_samples_leaf' to 3 from its previously tested values might achieve a balanced model. additionally, increasing 'n_estimators' to 300 could further leverage ensemble methods to stabilize the learning process and potentially enhance performance. these specific parameter values have not been previously tested, which aligns with the exploration of the hyperparameter search space aim.",
+    "error": ""
+  },
+  {
+    "params": {
+      "max_depth": 12,
+      "n_estimators": 350
+    },
+    "metrics": "train_mae 0.2311112903571032 train_r2 0.9205466512253329 test_mae 0.3455200056510435 test_r2 0.7925012129562196",
+    "reason": "suggesting a marginally increased 'max_depth' and further increased 'n_estimators' since these specific values were not part of the previously tested hyperparameter configurations and align with the goal of improving model performance and controlling overfitting.",
+    "error": ""
+  },
+  {
+    "params": {
+      "max_depth": 30,
+      "min_samples_split": 10
+    },
+    "metrics": "train_mae 0.1798223097494107 train_r2 0.9423936641716155 test_mae 0.3305027974534043 test_r2 0.8019948837365987",
+    "reason": "extending 'max_depth' to 30 could allow the model to potentially capture more complex patterns provided the data supports it. adjusting 'min_samples_split' to 10 introduces further constraint on how splits are evaluated when the tree grows, which might aid in addressing overfitting and creating more generalized results. these values have not been tested yet.",
+    "error": ""
+  },
+  {
+    "params": [],
+    "metrics": [],
+    "reason": "after analyzing the current parameter tests, suggesting unique values for 'min_weight_fraction_leaf' and 'ccp_alpha' not previously explored increases generalization focus. further optimization apparent."
   }
 ]

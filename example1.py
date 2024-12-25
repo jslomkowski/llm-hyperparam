@@ -14,10 +14,12 @@ from sklearn.preprocessing import StandardScaler
 
 def get_gpt4_decision(metrics):
     system_message = (
-        "Given the model performance metrics and the training log, suggest the best "
-        "hyperparameters for n_estimators and max_depth for a Random Forest Regressor. "
-        "Only suggest new hyperparameters that have not been tested before. If no new "
-        "hyperparameters can be suggested, provide a decision to stop optimization with a simple yes or no."
+        "Given the model performance metrics and the training log, suggest the"
+        "best hyperparameters for a Random Forest Regressor. The optimization"
+        "goal is to maximize model performance and reduce overfitting. Only"
+        "suggest new hyperparameters that have not been tested before. If no"
+        "new hyperparameters can be suggested, provide a decision to stop or"
+        "proceed with optimization with a simple yes or no."
     )
 
     log = load_log()
@@ -32,17 +34,17 @@ def get_gpt4_decision(metrics):
                 }
             ],
         },
-        {"role": "user", "content": [{"type": "text", "text": metrics}]},
         {"role": "user", "content": [{"type": "text", "text": f"Training log: {log}"}]},
     ]
 
     class Param(BaseModel):
-        n_estimators: float
-        max_depth: float
+        param_name: str
+        param_value: float
 
     class Schema(BaseModel):
         decision: str
         params: List[Param]
+        reason: str
 
     # Generate the completion
     completion = client.beta.chat.completions.parse(
@@ -63,7 +65,9 @@ LOG_FILE = "training_log.json"
 def load_log():
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r") as file:
-            return json.load(file)
+            content = file.read().strip()
+            if content:
+                return json.loads(content)
     return []
 
 
@@ -106,25 +110,28 @@ model = RandomForestRegressor(random_state=42)
 model.fit(X_train, y_train)
 
 # Performance evaluation
-y_pred = model.predict(X_test)
-print("MAE:", mean_absolute_error(y_test, y_pred))
-print("R²:", r2_score(y_test, y_pred))
+y_train_pred = model.predict(X_train)
+y_test_pred = model.predict(X_test)
 
-metrics = f"mae {mean_absolute_error(y_test, y_pred)} r2 {r2_score(y_test, y_pred)}"
+train_mae = mean_absolute_error(y_train, y_train_pred)
+train_r2 = r2_score(y_train, y_train_pred)
+test_mae = mean_absolute_error(y_test, y_test_pred)
+test_r2 = r2_score(y_test, y_test_pred)
+
+metrics = (
+    f"train_mae {train_mae} train_r2 {train_r2} "
+    f"test_mae {test_mae} test_r2 {test_r2}"
+)
 print("Metrics:", metrics)
 
 log = load_log()
-current_params = {
-    "n_estimators": model.get_params()["n_estimators"],
-    "max_depth": model.get_params()["max_depth"],
-}
+current_params = model.get_params()
 
 if not log_exists(log, current_params):
-    log.append({"params": current_params, "metrics": metrics})
+    log.append(
+        {"params": current_params, "metrics": metrics, "reason": "Initial model"}
+    )
     save_log(log)
-
-metrics = f"mae {mean_absolute_error(y_test, y_pred)} r2 {r2_score(y_test, y_pred)}"
-print("Metrics:", metrics)
 
 tries = 0
 max_tries = 15
@@ -133,27 +140,57 @@ while tries < max_tries:
     suggestion = get_gpt4_decision(metrics)
 
     if suggestion["decision"] == "no":
-        print("No further optimization needed based on GPT-4's suggestion.")
+        print(
+            "No further optimization needed based on GPT-4's suggestion.",
+            suggestion["reason"],
+        )
+        log.append({"params": [], "metrics": [], "reason": suggestion["reason"]})
+        save_log(log)
         break
 
     print("Optimizing hyperparameters based on GPT-4's suggestion.")
-    suggested_params = suggestion["params"][0]
+    suggested_params = {
+        param["param_name"]: param["param_value"] for param in suggestion["params"]
+    }
     if not log_exists(log, suggested_params):
         # Validate hyperparameters
-        if (
-            isinstance(suggested_params["max_depth"], int)
-            and suggested_params["max_depth"] > 0
-        ):
+        try:
+            model = RandomForestRegressor(random_state=42)
             model.set_params(**suggested_params)
             model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            print("After tuning - MAE:", mean_absolute_error(y_test, y_pred))
-            print("After tuning - R²:", r2_score(y_test, y_pred))
-            metrics = f"mae {mean_absolute_error(y_test, y_pred)} r2 {r2_score(y_test, y_pred)}"
-            log.append({"params": suggested_params, "metrics": metrics})
+            y_train_pred = model.predict(X_train)
+            y_test_pred = model.predict(X_test)
+
+            train_mae = mean_absolute_error(y_train, y_train_pred)
+            train_r2 = r2_score(y_train, y_train_pred)
+            test_mae = mean_absolute_error(y_test, y_test_pred)
+            test_r2 = r2_score(y_test, y_test_pred)
+
+            metrics = (
+                f"train_mae {train_mae} train_r2 {train_r2} "
+                f"test_mae {test_mae} test_r2 {test_r2}"
+            )
+            log_entry = {
+                "params": suggested_params,
+                "metrics": metrics,
+                "reason": suggestion["reason"],
+                "error": "",
+            }
+            log.append(log_entry)
             save_log(log)
-        else:
-            print(f"Invalid hyperparameters suggested: {suggested_params}")
+        except ValueError as e:
+            error_message = str(e)
+            print(
+                f"Invalid hyperparameters suggested: {suggested_params}. Error: {error_message}"
+            )
+            log_entry = {
+                "params": suggested_params,
+                "metrics": metrics,
+                "reason": suggestion["reason"],
+                "error": error_message,
+            }
+            log.append(log_entry)
+            save_log(log)
     else:
         print("Suggested hyperparameters have already been tested.")
 
