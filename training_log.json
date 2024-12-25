@@ -154,5 +154,52 @@
     "params": [],
     "metrics": [],
     "reason": "after analyzing the current parameter tests, suggesting unique values for 'min_weight_fraction_leaf' and 'ccp_alpha' not previously explored increases generalization focus. further optimization apparent."
+  },
+  {
+    "params": {
+      "n_estimators": 400,
+      "min_samples_split": 12
+    },
+    "metrics": "train_mae 0.19083856360596507 train_r2 0.9361213569182765 test_mae 0.3303316446747874 test_r2 0.8030491814672545",
+    "reason": "introducing new hyperparameter settings: increasing 'n_estimators' to 400 to enhance the ensemble's predictive stability, and setting 'min_samples_split' to 12 to control tree splits further, aligns with the pursuit of enhanced model performance and the exploration of previously untested hyperparameters.",
+    "error": ""
+  },
+  {
+    "params": {},
+    "metrics": "train_mae 0.12222281103439962 train_r2 0.9735281004123543 test_mae 0.3278624704699614 test_r2 0.8046221033671924",
+    "reason": "the current training log suggests a thorough exploration of the hyperparameter space for random forest. many relevant hyperparameters have been tested with various values to balance performance and overfitting. without new avenues or parameters to test, additional optimization attempts might not yield significantly better results. thus, it seems reasonable to halt further hyperparameter optimization efforts.",
+    "error": ""
+  },
+  {
+    "params": {
+      "min_samples_split": 7,
+      "max_depth": 18
+    },
+    "metrics": "train_mae 0.16734974046018009 train_r2 0.9514963695939149 test_mae 0.32927821381806704 test_r2 0.8036846417250434",
+    "reason": "the suggested parameters of 'min_samples_split=7' and 'max_depth=18' are new, have not been tested in prior experiments, and align with addressing overfitting and improving generalization based on observed trends from tested parameters.",
+    "error": ""
+  },
+  {
+    "params": {
+      "max_features": 0.6,
+      "min_samples_leaf": 4
+    },
+    "metrics": "train_mae 0.20811220437897168 train_r2 0.9192521959348029 test_mae 0.32897387200914197 test_r2 0.8052880153163776",
+    "reason": "the suggested parameters 'max_features=0.6' and 'min_samples_leaf=4' have not yet been explored in the training log. they aim to further control overfitting and enhance generalization.",
+    "error": ""
+  },
+  {
+    "params": {
+      "min_samples_split": 15,
+      "max_leaf_nodes": 75
+    },
+    "metrics": "train_mae 0.3979053413861012 train_r2 0.7670507424065633 test_mae 0.41955609096944063 test_r2 0.7233101968608655",
+    "reason": "the training log indicates that tested hyperparameter configurations have not yet explored values for 'min_samples_split' at 15 or 'max_leaf_nodes' at 75. these suggestions are aimed at further controlling tree growth and enhancing generalization.",
+    "error": ""
+  },
+  {
+    "params": [],
+    "metrics": [],
+    "reason": "from the analysis of the training log, these parameter values have not been explicitly tested yet, and they direct a further control of the model complexity for potential performance enhancement."
   }
 ]

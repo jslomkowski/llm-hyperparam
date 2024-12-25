@@ -59,9 +59,6 @@ def get_gpt4_decision(metrics):
     return suggestion
 
 
-LOG_FILE = "training_log.json"
-
-
 def load_log():
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r") as file:
@@ -80,6 +77,29 @@ def log_exists(log, params):
     return any(entry["params"] == params for entry in log)
 
 
+def log_metrics(log, params, metrics, reason, error=""):
+    log_entry = {
+        "params": params,
+        "metrics": metrics,
+        "reason": reason,
+        "error": error,
+    }
+    log.append(log_entry)
+    save_log(log)
+
+
+def calculate_metrics(model, X_train, y_train, X_test, y_test):
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
+    train_mae = mean_absolute_error(y_train, y_train_pred)
+    train_r2 = r2_score(y_train, y_train_pred)
+    test_mae = mean_absolute_error(y_test, y_test_pred)
+    test_r2 = r2_score(y_test, y_test_pred)
+    return train_mae, train_r2, test_mae, test_r2
+
+
+LOG_FILE = "training_log.json"
+
 with open("key", "r") as file:
     api_key = file.read().strip()
 
@@ -91,7 +111,7 @@ client = AzureOpenAI(
     azure_endpoint="https://openaiwsdev-gpt4-2.openai.azure.com/",
 )
 
-# Load the California Housing dataset
+
 california = fetch_california_housing()
 X = pd.DataFrame(california.data, columns=california.feature_names)
 y = pd.Series(california.target, name="MedHouseVal")
@@ -109,18 +129,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 model = RandomForestRegressor(random_state=42)
 model.fit(X_train, y_train)
 
-# Performance evaluation
-y_train_pred = model.predict(X_train)
-y_test_pred = model.predict(X_test)
 
-train_mae = mean_absolute_error(y_train, y_train_pred)
-train_r2 = r2_score(y_train, y_train_pred)
-test_mae = mean_absolute_error(y_test, y_test_pred)
-test_r2 = r2_score(y_test, y_test_pred)
-
+train_mae, train_r2, test_mae, test_r2 = calculate_metrics(
+    model, X_train, y_train, X_test, y_test
+)
 metrics = (
-    f"train_mae {train_mae} train_r2 {train_r2} "
-    f"test_mae {test_mae} test_r2 {test_r2}"
+    f"train_mae {train_mae} train_r2 {train_r2} test_mae {test_mae} test_r2 {test_r2}"
 )
 print("Metrics:", metrics)
 
@@ -170,27 +184,15 @@ while tries < max_tries:
                 f"train_mae {train_mae} train_r2 {train_r2} "
                 f"test_mae {test_mae} test_r2 {test_r2}"
             )
-            log_entry = {
-                "params": suggested_params,
-                "metrics": metrics,
-                "reason": suggestion["reason"],
-                "error": "",
-            }
-            log.append(log_entry)
-            save_log(log)
+            log_metrics(log, suggested_params, metrics, suggestion["reason"])
         except ValueError as e:
             error_message = str(e)
             print(
                 f"Invalid hyperparameters suggested: {suggested_params}. Error: {error_message}"
             )
-            log_entry = {
-                "params": suggested_params,
-                "metrics": metrics,
-                "reason": suggestion["reason"],
-                "error": error_message,
-            }
-            log.append(log_entry)
-            save_log(log)
+            log_metrics(
+                log, suggested_params, metrics, suggestion["reason"], error_message
+            )
     else:
         print("Suggested hyperparameters have already been tested.")
 
