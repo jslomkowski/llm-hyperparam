@@ -171,3 +171,4 @@ cython_debug/
 .pypirc
 key
 .aider*
+df_final.parquet
