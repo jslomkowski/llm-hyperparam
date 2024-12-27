@@ -129,7 +129,7 @@ def plot_categorical_vs_numerical(column_cat, column_num, top_n=None):
     plt.figure(figsize=FIGURE_SIZE)
     bp = plt.boxplot(
         data,
-        labels=column_cat_cleaned.unique(),
+        tick_labels=column_cat_cleaned.unique(),
         patch_artist=True,
     )
     # Set alpha for boxplots
