@@ -172,3 +172,4 @@ cython_debug/
 key
 .aider*
 df_final.parquet
+df.parquet

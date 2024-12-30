@@ -15,7 +15,7 @@ BAR_EDGE_COLOR = "black"
 GRID_STYLE = {"axis": "y", "linestyle": "--", "alpha": 0.7}
 BAR_WIDTH_FACTOR = 0.8
 
-COLOR_PALETTE = plt.cm.tab10
+COLOR_PALETTE = plt.get_cmap("RdYlGn")
 
 
 def get_colors(n):
@@ -28,7 +28,13 @@ y = adult.target
 
 
 def plot_numerical_column(
-    column, by=None, top_n=None, bin_size=None, start=None, end=None
+    column,
+    by=None,
+    top_n=None,
+    bin_size=None,
+    start=None,
+    end=None,
+    as_percentage=False,
 ):
     min_val = column.min()
     max_val = column.max()
@@ -55,6 +61,8 @@ def plot_numerical_column(
                 for j in range(len(bin_edges) - 1)
             ]
             x_positions = np.arange(len(bin_labels)) + i * bar_width
+            if as_percentage:
+                counts = (counts / counts.sum()) * 100
             plt.bar(
                 x_positions,
                 counts,
@@ -81,6 +89,8 @@ def plot_numerical_column(
             f"[{bin_edges[i]:.2f}, {bin_edges[i+1]:.2f})"
             for i in range(len(bin_edges) - 1)
         ]
+        if as_percentage:
+            counts = (counts / counts.sum()) * 100
         plt.bar(
             bin_labels,
             counts,
@@ -91,7 +101,8 @@ def plot_numerical_column(
         plt.title(f"Distribution of {column.name}", fontsize=TITLE_SIZE)
 
     plt.xlabel("Bins", fontsize=LABEL_SIZE)
-    plt.ylabel("Count", fontsize=LABEL_SIZE)
+    ylabel = "Percentage" if as_percentage else "Count"
+    plt.ylabel(ylabel, fontsize=LABEL_SIZE)
     plt.xticks(rotation=45, ha="right", fontsize=TICK_LABEL_SIZE)
     plt.yticks(fontsize=TICK_LABEL_SIZE)
     plt.grid(**GRID_STYLE)
@@ -400,23 +411,20 @@ def generate_random_time_series(start_date, end_date, freq="D", seed=None):
     return pd.Series(data=values, index=date_range, name="Random Time Series")
 
 
-if __name__ == "__main__":
-    plot_numerical_column(X["age"], by=X["sex"], bin_size=5, start=0, end=100)
-    plot_categorical_column(X["workclass"], by=X["sex"], top_n=5)
-    plot_two_numerical_columns(
-        X["age"], X["education-num"], by=X["sex"], trend_line=True
-    )
-    plot_two_categorical_columns(X["workclass"], X["marital-status"])
-    plot_categorical_vs_numerical(X["workclass"], X["age"], by=X["sex"], top_n=None)
+plot_numerical_column(X["age"], by=X["sex"], bin_size=5, start=0, end=100)
+plot_categorical_column(X["workclass"], by=X["sex"], top_n=5)
+plot_two_numerical_columns(X["age"], X["education-num"], by=X["sex"], trend_line=True)
+plot_two_categorical_columns(X["workclass"], X["marital-status"])
+plot_categorical_vs_numerical(X["workclass"], X["age"], by=X["sex"], top_n=None)
 
-    ts1 = generate_random_time_series(
-        start_date="2023-01-01", end_date="2023-11-30", freq="D", seed=42
-    )
-    ts2 = generate_random_time_series(
-        start_date="2023-12-01", end_date="2023-12-31", freq="D", seed=42
-    )
-    ts3 = generate_random_time_series(
-        start_date="2023-12-01", end_date="2023-12-31", freq="D", seed=43
-    )
+ts1 = generate_random_time_series(
+    start_date="2023-01-01", end_date="2023-11-30", freq="D", seed=42
+)
+ts2 = generate_random_time_series(
+    start_date="2023-12-01", end_date="2023-12-31", freq="D", seed=42
+)
+ts3 = generate_random_time_series(
+    start_date="2023-12-01", end_date="2023-12-31", freq="D", seed=43
+)
 
-    plot_time_series(ts1, ts2, ts3)
+plot_time_series(ts1, ts2, ts3)
